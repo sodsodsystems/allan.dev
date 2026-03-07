@@ -1,0 +1,63 @@
+# 🚀 GitHub Setup Guide
+
+Your portfolio is ready! Follow these steps to deploy it on GitHub Pages.
+
+## Step 1: Create a GitHub Repository
+
+1. Go to https://github.com/new
+2. Choose your repository name:
+   - **Option A (Recommended):** `sodsodsystems.github.io` → Site will be at https://sodsodsystems.github.io
+   - **Option B:** `allan.dev` → Site will be at https://sodsodsystems.github.io/allan.dev
+3. Select "Public" (required for GitHub Pages)
+4. **Do NOT initialize with README** (you already have files)
+5. Click "Create repository"
+
+## Step 2: Add Remote and Push
+
+After creating the repository, copy the HTTPS URL and run these commands in PowerShell:
+
+```powershell
+cd "c:\Users\admin\Documents\OJT\OJT PROJECTS\PORTFOLIO"
+&"C:\Program Files\Git\cmd\git.exe" remote add origin https://github.com/sodsodsystems/REPO_NAME.git
+&"C:\Program Files\Git\cmd\git.exe" branch -M main
+&"C:\Program Files\Git\cmd\git.exe" push -u origin main
+```
+
+Replace `REPO_NAME` with your repository name from Step 1.
+
+## Step 3: Enable GitHub Pages
+
+1. Go to your repository on GitHub
+2. Click **Settings** (top right)
+3. Scroll to **Pages** (left sidebar)
+4. Under "Source", select "Deploy from a branch"
+5. Choose "main" branch and save
+
+## Step 4: Rename Your HTML File to index.html (Optional but Recommended)
+
+If you used `sodsodsystems.github.io`:
+- Rename `allan.dev.html` → `index.html`
+- Run: 
+  ```powershell
+  &"C:\Program Files\Git\cmd\git.exe" mv allan.dev.html index.html
+  &"C:\Program Files\Git\cmd\git.exe" commit -m "Rename to index.html for GitHub Pages"
+  &"C:\Program Files\Git\cmd\git.exe" push
+  ```
+
+## 🎉 Done!
+
+Your website will be live in 1-2 minutes at:
+- `https://sodsodsystems.github.io` (if using sodsodsystems.github.io repo)
+- `https://sodsodsystems.github.io/allan.dev` (if using allan.dev repo)
+
+## 📌 Custom Domain Setup (Optional)
+
+If you own `allan.dev`:
+1. Go to Settings → Pages → Custom domain
+2. Enter `allan.dev`
+3. Update your domain provider's DNS records to point to GitHub Pages
+4. GitHub will auto-generate an HTTPS certificate
+
+---
+
+**Need help?** Check the README.md for more info!
