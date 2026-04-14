@@ -6,14 +6,59 @@
 <title>Allan Paul Sodsod II</title>
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
+  *{margin:0;padding:0;box-sizing:border-box; cursor: none;}
   :root{
     --bg:#0a0a0f;--bg2:#111118;--card:#16161f;
     --blue:#4f8ef7;--purple:#9b5de5;--pink:#f72585;
     --text:#e8e8f0;--muted:#888899;
+    --matrix-color: rgba(79, 142, 247, 0.15);
   }
   html{scroll-behavior:smooth}
-  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;line-height:1.6}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;line-height:1.6; overflow-x: hidden;}
+
+  /* satisfying cursor */
+  .cursor-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--blue);
+    position: fixed;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    z-index: 9999;
+    pointer-events: none;
+    transition: transform 0.1s ease-out;
+  }
+  .cursor-outline {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--purple);
+    position: fixed;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    z-index: 9998;
+    pointer-events: none;
+    transition: transform 0.15s ease-out, width 0.3s, height 0.3s, background-color 0.3s, border-color 0.3s;
+  }
+  .cursor-hover {
+    width: 60px;
+    height: 60px;
+    background-color: rgba(155, 93, 229, 0.1);
+    border-color: var(--pink);
+  }
+
+  /* Matrix Canvas */
+  #matrixCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0.6;
+    pointer-events: none;
+  }
 
   .grad{background:linear-gradient(135deg,var(--blue),var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
   .grad-border{border:1px solid transparent;background:linear-gradient(var(--card),var(--card)) padding-box,linear-gradient(135deg,var(--blue),var(--purple),var(--pink)) border-box}
@@ -32,7 +77,7 @@
   nav ul{list-style:none;display:flex;gap:1.5rem;margin-left:auto}
   
   /* Fitts's Law: Increased Tap Targets */
-  nav a{color:var(--muted);text-decoration:none;font-size:.9rem;letter-spacing:.5px;transition:all .3s;white-space:nowrap; padding: 0.5rem 1rem; border-radius: 8px;}
+  nav a{color:var(--muted);text-decoration:none;font-size:.9rem;letter-spacing:.5px;transition:all 0.4s cubic-bezier(0.16, 1, 0.3, 1);white-space:nowrap; padding: 0.5rem 1rem; border-radius: 8px;}
   nav a:hover{color:var(--text); background: rgba(255,255,255,0.05);}
 
   /* Law of Proximity in Hero */
@@ -45,11 +90,11 @@
   .hero p{font-size:1.1rem;color:var(--muted);max-width:540px;margin-bottom:1rem;}
   
   /* Fitts's Law + Von Restorff Effect: Larger targets, distinct styling */
-  .btn{display:inline-flex;align-items:center;justify-content:center;padding:1rem 2.5rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:.95rem;transition:transform .2s,box-shadow .2s;cursor:pointer;border:none;min-height:50px;min-width:120px; gap: 0.5rem;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;padding:1rem 2.5rem;border-radius:50px;text-decoration:none;font-weight:600;font-size:.95rem;transition:all 0.4s cubic-bezier(0.16, 1, 0.3, 1);cursor:pointer;border:none;min-height:50px;min-width:120px; gap: 0.5rem;}
   .btn-primary{background:linear-gradient(135deg,var(--blue),var(--purple),var(--pink));color:#fff}
-  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(155,93,229,.4)}
+  .btn-primary:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 15px 40px rgba(155,93,229,.4)}
   .btn-outline{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,.25);} /* Slightly more visible border */
-  .btn-outline:hover{border-color:var(--purple);color:var(--purple);transform:translateY(-2px); background: rgba(255,255,255,0.02);}
+  .btn-outline:hover{border-color:var(--purple);color:var(--purple);transform:translateY(-4px) scale(1.02); background: rgba(255,255,255,0.02);}
 
   section{padding:6rem 2rem;max-width:1100px;margin:0 auto}
   .section-label{font-size:.75rem;letter-spacing:3px;text-transform:uppercase;color:var(--purple);margin-bottom:.75rem}
@@ -57,7 +102,7 @@
   .section-sub{color:var(--muted);max-width:560px;margin-bottom:3rem}
 
   /* Law of Common Region in About */
-  .about-content-wrapper { background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.03); border-radius: 24px; padding: 2.5rem; }
+  .about-content-wrapper { background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.03); border-radius: 24px; padding: 2.5rem; backdrop-filter: blur(4px);}
   .about-grid{display:grid;grid-template-columns:1fr 1.6fr;gap:4rem;align-items:center}
   
   .about-avatar{width:100%;aspect-ratio:1;border-radius:20px;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:4.5rem;border:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.2);}
@@ -66,8 +111,8 @@
   .about-text p{color:var(--muted);margin-bottom:1.2rem;font-size:1rem}
   
   .pill-row{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:2rem}
-  .pill{display:flex;align-items:center;gap:0.4rem;padding:.4rem 1rem;border-radius:50px;font-size:.85rem;border:1px solid rgba(155,93,229,.35);color:var(--purple); transition: all 0.2s;}
-  .pill:hover{background: rgba(155,93,229,.1); border-color: rgba(155,93,229,.6);}
+  .pill{display:flex;align-items:center;gap:0.4rem;padding:.4rem 1rem;border-radius:50px;font-size:.85rem;border:1px solid rgba(155,93,229,.35);color:var(--purple); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);}
+  .pill:hover{background: rgba(155, 93, 229, 0.1); border-color: rgba(155, 93, 229, 0.6); transform: translateY(-2px);}
   
   .stat-row{display:flex;gap:3rem;margin-top:2.5rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);}
   .stat h3{font-size:2.2rem;font-weight:800; line-height: 1.1; margin-bottom: 0.2rem;}
@@ -75,33 +120,33 @@
 
   /* Aesthetic-Usability Effect: Enhanced hover and layout */
   .projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:2rem}
-  .card{background:var(--card);border-radius:16px;padding:2rem;transition:all .3s ease;border:1px solid rgba(255,255,255,.05);cursor:pointer; position: relative;}
-  .card:hover{transform:translateY(-8px);box-shadow:0 20px 50px rgba(0,0,0,.5); border-color: rgba(155,93,229,.3);}
+  .card{background:var(--card);border-radius:16px;padding:2rem;transition:all 0.4s cubic-bezier(0.16, 1, 0.3, 1);border:1px solid rgba(255,255,255,.05);cursor:pointer; position: relative; backdrop-filter: blur(4px);}
+  .card:hover{transform:translateY(-12px) scale(1.02);box-shadow:0 30px 60px rgba(0,0,0,.5); border-color: rgba(155,93,229,0.3);}
   .card-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:1.5rem}
   .card h3{font-size:1.2rem;font-weight:600;margin-bottom:.6rem; color: #fff;}
   .card p{font-size:.9rem;color:var(--muted);margin-bottom:1.5rem; line-height: 1.6;}
   .tag{display:inline-flex;align-items:center;gap:0.3rem;padding:.3rem .8rem;border-radius:50px;font-size:.75rem;background:rgba(255,255,255,.06);color:var(--muted);margin:.3rem .3rem 0 0}
   
   .skills-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1.2rem}
-  .skill{background:var(--card);border-radius:14px;padding:1.5rem;text-align:center;border:1px solid rgba(255,255,255,.05);transition:all .3s ease;}
-  .skill:hover{border-color:var(--purple);transform:translateY(-4px); box-shadow: 0 10px 30px rgba(155,93,229,.15); background: rgba(255,255,255,0.02);}
+  .skill{background:var(--card);border-radius:14px;padding:1.5rem;text-align:center;border:1px solid rgba(255,255,255,.05);transition:all 0.4s cubic-bezier(0.16, 1, 0.3, 1); backdrop-filter: blur(4px);}
+  .skill:hover{border-color:var(--purple);transform:translateY(-8px) scale(1.05); box-shadow: 0 15px 40px rgba(155,93,229,.2); background: rgba(255,255,255,0.02);}
   .skill-icon{font-size:2rem;margin-bottom:.6rem; color: var(--blue);}
   .skill strong{font-size:.95rem; color: #fff;}
   .skill p{font-size:.8rem;color:var(--muted);margin-top:.3rem}
 
-  .contact-box{background:var(--card);border-radius:24px;padding:4rem 3rem;text-align:center;border:1px solid rgba(255,255,255,.08);max-width:650px;margin:0 auto;position:relative;overflow:hidden}
+  .contact-box{background:var(--card);border-radius:24px;padding:4rem 3rem;text-align:center;border:1px solid rgba(255,255,255,.08);max-width:650px;margin:0 auto;position:relative;overflow:hidden; backdrop-filter: blur(8px);}
   .contact-box::before{content:'';position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(247,37,133,.1),transparent 60%);top:-100px;left:50%;transform:translateX(-50%)}
   .contact-box h2{font-size:2.4rem;font-weight:700;margin-bottom:.75rem;position:relative}
   .contact-box p{color:var(--muted);margin-bottom:2.5rem;position:relative; font-size: 1.05rem;}
   .social-links{display:flex;justify-content:center;gap:1rem;margin-top:2rem;flex-wrap:wrap}
-  .social-link{padding:.6rem 1.5rem;border-radius:50px;border:1px solid rgba(255,255,255,.15);color:var(--text);text-decoration:none;font-size:.9rem;transition:all .3s;min-height:48px;display:inline-flex;align-items:center;justify-content:center; gap: 0.5rem;}
-  .social-link:hover{border-color:var(--pink);color:var(--pink); background: rgba(247,37,133,0.05);}
+  .social-link{padding:.6rem 1.5rem;border-radius:50px;border:1px solid rgba(255,255,255,.15);color:var(--text);text-decoration:none;font-size:.9rem;transition:all 0.4s cubic-bezier(0.16, 1, 0.3, 1);min-height:48px;display:inline-flex;align-items:center;justify-content:center; gap: 0.5rem;}
+  .social-link:hover{border-color:var(--pink);color:var(--pink); background: rgba(247, 37, 133, 0.05); transform: translateY(-4px) scale(1.05);}
 
-  footer{text-align:center;padding:2.5rem;color:var(--muted);font-size:.85rem;border-top:1px solid rgba(255,255,255,.05);line-height:1.6}
+  footer{text-align:center;padding:2.5rem;color:var(--muted);font-size:.85rem;border-top:1px solid rgba(255,255,255,.05);line-height:1.6; position: relative; z-index: 1;}
   .glow{display:inline-block;width:10px;height:10px;border-radius:50%;background:linear-gradient(var(--blue),var(--pink));box-shadow:0 0 12px var(--purple);margin-right:.6rem;vertical-align:middle}
 
   /* Scroll Entry Animations */
-  .animate-on-scroll { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+  .animate-on-scroll { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
   .animate-on-scroll.is-visible { opacity: 1; transform: translateY(0); }
   
   /* Staggered Delay for grid items */
@@ -113,24 +158,29 @@
   /* Mobile Media Queries Adaptation */
   @media(max-width:768px){
     nav a { padding: 0.4rem 0.5rem; font-size: 0.85rem;}
-    .hero{min-height:auto; padding: 8rem 1.5rem 4rem;}
+    .hero{min-height:auto; padding: 10rem 1.5rem 5rem;}
     .about-grid{grid-template-columns:1fr;gap:2.5rem}
     .about-content-wrapper { padding: 1.5rem; }
     .stat-row{flex-direction: column; gap: 1.5rem;}
+    .cursor-dot, .cursor-outline { display: none; }
+    * { cursor: auto !important; }
   }
 </style>
 </head>
 <body>
 
+<canvas id="matrixCanvas"></canvas>
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-outline" id="cursorOutline"></div>
 <div id="progressBar"></div>
 
 <nav>
   <div class="logo">Allan<span>.dev</span></div>
   <ul>
-    <li><a href="#about">About</a></li>
-    <li><a href="#projects">Projects</a></li>
-    <li><a href="#skills" class="desktop-only">Skills</a></li>
-    <li><a href="#contact" class="desktop-only">Contact</a></li>
+    <li><a href="#about" class="nav-link">About</a></li>
+    <li><a href="#projects" class="nav-link">Projects</a></li>
+    <li><a href="#skills" class="nav-link">Skills</a></li>
+    <li><a href="#contact" class="nav-link">Contact</a></li>
   </ul>
 </nav>
 
@@ -138,17 +188,17 @@
   <p class="hero-tag animate-on-scroll is-visible"><i class="ph ph-sparkle" style="margin-right: 6px; color: var(--purple);"></i> Computer Engineering Graduate</p>
   <h1 class="animate-on-scroll is-visible delay-1"><span class="grad">Engineering Ideas</span><br>into Digital Reality</h1>
   <p class="hero-name animate-on-scroll is-visible delay-2">Engr. Allan Paul A. Sodsod II</p>
-  <p class="animate-on-scroll is-visible delay-3">I build purposeful software, lead projects from concept to launch, and design experiences that make a real difference.</p>
+  <p class="animate-on-scroll is-visible delay-3 text-reveal">I build purposeful software, lead projects from concept to launch, and design experiences that make a real difference.</p>
   <div class="hero-buttons animate-on-scroll is-visible delay-4">
-    <a href="#projects" class="btn btn-primary"><span>View My Work</span> <i class="ph ph-arrow-right"></i></a>
-    <a href="#contact" class="btn btn-outline">Say Hello <i class="ph ph-hand-waving"></i></a>
+    <a href="#projects" class="btn btn-primary interactive"><span>View My Work</span> <i class="ph ph-arrow-right"></i></a>
+    <a href="#contact" class="btn btn-outline interactive">Say Hello <i class="ph ph-hand-waving"></i></a>
   </div>
 </div>
 
 <section id="about">
   <div class="about-grid">
     <div class="animate-on-scroll">
-      <div class="about-avatar">
+      <div class="about-avatar interactive">
         <i class="ph ph-user-focus" style="color: rgba(255,255,255,0.7);"></i>
         <span class="avatar-label">Allan Paul</span>
       </div>
@@ -161,17 +211,17 @@
         <p>I enjoy brainstorming creative solutions, translating messy ideas into structured plans, and shipping products that people actually love to use. Whether it's a web platform, an automated system, or a polished UI, I bring both the technical depth and the design eye to get it done right.</p>
         
         <div class="pill-row">
-          <span class="pill"><i class="ph ph-code"></i> Coding</span>
-          <span class="pill"><i class="ph ph-kanban"></i> Project Mgmt</span>
-          <span class="pill"><i class="ph ph-paint-brush-broad"></i> Design</span>
-          <span class="pill"><i class="ph ph-lightbulb"></i> Brainstorming</span>
-          <span class="pill"><i class="ph ph-wrench"></i> Systems Thinking</span>
+          <span class="pill interactive"><i class="ph ph-code"></i> Coding</span>
+          <span class="pill interactive"><i class="ph ph-kanban"></i> Project Mgmt</span>
+          <span class="pill interactive"><i class="ph ph-paint-brush-broad"></i> Design</span>
+          <span class="pill interactive"><i class="ph ph-lightbulb"></i> Brainstorming</span>
+          <span class="pill interactive"><i class="ph ph-wrench"></i> Systems Thinking</span>
         </div>
         
         <div class="stat-row">
-          <div class="stat"><h3 class="grad">CpE</h3><p>Licensed Engineer</p></div>
-          <div class="stat"><h3 class="grad">2+</h3><p>Projects Shipped</p></div>
-          <div class="stat"><h3 class="grad">∞</h3><p>Ideas Brewing</p></div>
+          <div class="stat interactive"><h3 class="grad">CpE</h3><p>Licensed Engineer</p></div>
+          <div class="stat interactive"><h3 class="grad">2+</h3><p>Projects Shipped</p></div>
+          <div class="stat interactive"><h3 class="grad">∞</h3><p>Ideas Brewing</p></div>
         </div>
       </div>
     </div>
@@ -184,7 +234,7 @@
   <p class="section-sub animate-on-scroll delay-2">A look at projects I've designed, engineered, and shipped — from care platforms to health automation systems.</p>
   
   <div class="projects-grid">
-    <div class="card grad-border animate-on-scroll delay-1">
+    <div class="card grad-border animated-card interactive animate-on-scroll delay-1">
       <div class="card-icon" style="background:linear-gradient(135deg,rgba(247,37,133,.2),rgba(155,93,229,.2)); color: #f72585;">
         <i class="ph ph-paw-print"></i>
       </div>
@@ -197,7 +247,7 @@
       </div>
     </div>
     
-    <div class="card grad-border animate-on-scroll delay-2">
+    <div class="card grad-border animated-card interactive animate-on-scroll delay-2">
       <div class="card-icon" style="background:linear-gradient(135deg,rgba(79,142,247,.2),rgba(155,93,229,.2)); color: #4f8ef7;">
         <i class="ph ph-hospital"></i>
       </div>
@@ -218,25 +268,25 @@
   <p class="section-sub animate-on-scroll delay-2">Technologies, tools, and competencies I bring to every project.</p>
   
   <div class="skills-grid">
-    <div class="skill animate-on-scroll delay-1"><div class="skill-icon"><i class="ph ph-code"></i></div><strong>Coding</strong><p>Core strength</p></div>
-    <div class="skill animate-on-scroll delay-2"><div class="skill-icon"><i class="ph ph-paint-brush-broad"></i></div><strong>UI / UX Design</strong><p>Figma & beyond</p></div>
-    <div class="skill animate-on-scroll delay-3"><div class="skill-icon"><i class="ph ph-kanban"></i></div><strong>Project Mgmt</strong><p>Planning & leading</p></div>
-    <div class="skill animate-on-scroll delay-4"><div class="skill-icon"><i class="ph ph-globe"></i></div><strong>Web Dev</strong><p>Frontend & backend</p></div>
-    <div class="skill animate-on-scroll delay-1"><div class="skill-icon"><i class="ph ph-database"></i></div><strong>Databases</strong><p>Design & queries</p></div>
-    <div class="skill animate-on-scroll delay-2"><div class="skill-icon"><i class="ph ph-gear-six"></i></div><strong>Automation</strong><p>Systems & scripts</p></div>
-    <div class="skill animate-on-scroll delay-3"><div class="skill-icon"><i class="ph ph-lightbulb"></i></div><strong>Brainstorming</strong><p>Ideas → solutions</p></div>
-    <div class="skill animate-on-scroll delay-4"><div class="skill-icon"><i class="ph ph-cpu"></i></div><strong>CpE Fundamentals</strong><p>Hardware + software</p></div>
+    <div class="skill interactive animate-on-scroll delay-1"><div class="skill-icon"><i class="ph ph-code"></i></div><strong>Coding</strong><p>Core strength</p></div>
+    <div class="skill interactive animate-on-scroll delay-2"><div class="skill-icon"><i class="ph ph-paint-brush-broad"></i></div><strong>UI / UX Design</strong><p>Figma & beyond</p></div>
+    <div class="skill interactive animate-on-scroll delay-3"><div class="skill-icon"><i class="ph ph-kanban"></i></div><strong>Project Mgmt</strong><p>Planning & leading</p></div>
+    <div class="skill interactive animate-on-scroll delay-4"><div class="skill-icon"><i class="ph ph-globe"></i></div><strong>Web Dev</strong><p>Frontend & backend</p></div>
+    <div class="skill interactive animate-on-scroll delay-1"><div class="skill-icon"><i class="ph ph-database"></i></div><strong>Databases</strong><p>Design & queries</p></div>
+    <div class="skill interactive animate-on-scroll delay-2"><div class="skill-icon"><i class="ph ph-gear-six"></i></div><strong>Automation</strong><p>Systems & scripts</p></div>
+    <div class="skill interactive animate-on-scroll delay-3"><div class="skill-icon"><i class="ph ph-lightbulb"></i></div><strong>Brainstorming</strong><p>Ideas → solutions</p></div>
+    <div class="skill interactive animate-on-scroll delay-4"><div class="skill-icon"><i class="ph ph-cpu"></i></div><strong>CpE Fundamentals</strong><p>Hardware + software</p></div>
   </div>
 </section>
 
 <section id="contact" class="animate-on-scroll">
-  <div class="contact-box">
+  <div class="contact-box interactive">
     <p class="section-label" style="text-align:center">Contact</p>
     <h2><span class="glow"></span>Let's build<br><span class="grad">something great</span></h2>
     <p>Have a project, collaboration, or just want to connect? I'd love to hear from you.</p>
-    <a href="mailto:sodsodallanpaulii@gmail.com" class="btn btn-primary"><span>Send me an email</span> <i class="ph ph-paper-plane-right"></i></a>
+    <a href="mailto:sodsodallanpaulii@gmail.com" class="btn btn-primary interactive"><span>Send me an email</span> <i class="ph ph-paper-plane-right"></i></a>
     <div class="social-links">
-      <a href="https://github.com/sodsodsystems" target="_blank" class="social-link"><i class="ph ph-github-logo"></i> GitHub</a>
+      <a href="https://github.com/sodsodsystems" target="_blank" class="social-link interactive"><i class="ph ph-github-logo"></i> GitHub</a>
     </div>
   </div>
 </section>
@@ -246,6 +296,78 @@
 </footer>
 
 <script>
+  // Blue Matrix Effect
+  const canvas = document.getElementById('matrixCanvas');
+  const ctx = canvas.getContext('2d');
+
+  let width, height, columns, drops;
+  const fontSize = 16;
+
+  function initMatrix() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    columns = Math.floor(width / fontSize);
+    drops = Array(columns).fill(1);
+  }
+
+  function drawMatrix() {
+    ctx.fillStyle = 'rgba(10, 10, 15, 0.15)'; // trails
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.fillStyle = '#4f8ef7'; // blue
+    ctx.font = fontSize + 'px monospace';
+
+    for (let i = 0; i < drops.length; i++) {
+      const text = String.fromCharCode(Math.random() * 128);
+      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+      if (drops[i] * fontSize > height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+
+  window.addEventListener('resize', initMatrix);
+  initMatrix();
+  setInterval(drawMatrix, 50);
+
+  // Satisfying Custom Cursor logic
+  const cursorDot = document.getElementById('cursorDot');
+  const cursorOutline = document.getElementById('cursorOutline');
+
+  let mouseX = 0;
+  let mouseY = 0;
+  let curX = 0;
+  let curY = 0;
+  let curOutlineX = 0;
+  let curOutlineY = 0;
+
+  window.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  function animateCursor() {
+    // interpolation for smoothness
+    curX += (mouseX - curX) * 0.2;
+    curY += (mouseY - curY) * 0.2;
+    curOutlineX += (mouseX - curOutlineX) * 0.12;
+    curOutlineY += (mouseY - curOutlineY) * 0.12;
+
+    cursorDot.style.transform = `translate(${curX - 3}px, ${curY - 3}px)`;
+    cursorOutline.style.transform = `translate(${curOutlineX - 20}px, ${curOutlineY - 20}px)`;
+
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+
+  // Handle Interactive Hovering
+  document.querySelectorAll('.interactive, a, .btn, .card, .skill, .pill').forEach(el => {
+    el.addEventListener('mouseenter', () => cursorOutline.classList.add('cursor-hover'));
+    el.addEventListener('mouseleave', () => cursorOutline.classList.remove('cursor-hover'));
+  });
+
   // Zeigarnik Effect: Progress Bar
   window.addEventListener('scroll', () => {
     let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
@@ -259,7 +381,6 @@
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('is-visible');
-        // Optional: stop observing once it's visible, so they stay visible
         observer.unobserve(entry.target);
       }
     });
